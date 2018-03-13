@@ -1,0 +1,73 @@
+#!/bin/bash
+set -euo pipefail
+
+package_name=SampleRailsEngine
+gem_name=sample-rails-engine
+base_name=sample_rails_engine
+
+this_dir=$(cd $(dirname $0); pwd -P)
+gem_dir=$this_dir/$gem_name
+base_dir=$this_dir/$base_name
+temp_dir=$this_dir/${base_name}_temp
+
+mkdir -p $base_dir
+mkdir -p $base_dir
+mkdir -p $temp_dir
+rm -rf $gem_dir
+rm -rf $base_dir
+rm -rf $temp_dir
+
+rails plugin new $base_dir \
+  --mountable \
+  --full \
+  --skip-action-mailer \
+  --skip-active-record
+mv $base_dir $temp_dir
+
+rails plugin new $base_dir \
+  --mountable \
+  --full \
+  --skip-action-mailer \
+  --skip-active-record \
+  --skip-test
+mv $base_dir $gem_dir
+
+mkdir $gem_dir/test
+mv $temp_dir/test/dummy $gem_dir/test/dummy
+rm -rf $temp_dir
+
+cd $gem_dir
+git init
+cp ../generate .
+git add generate
+git commit -m 'Generation script' generate
+
+cd $gem_dir
+echo '/test/dummy/log/' >> .gitignore
+echo '/test/dummy/tmp/' >> .gitignore
+mv MIT-LICENSE LICENSE
+echo "# $package_name" > README.md
+sed -i \
+  -e "s/\x22$base_name\x22/\x27$gem_name\x27/" \
+  -e 's/\x22TODO\x22/\x27http:\/\/example.org\/\x27/' \
+  -e 's/\x22TODO: Summary of SampleRailsEngine.\x22/\x27Summary\x27/' \
+  -e 's/\x22TODO: Description of SampleRailsEngine.\x22/\x27Description\x27/' \
+  sample_rails_engine.gemspec
+sed -i \
+  -e "s/\x22\/$base_name\x22/\x27\/$gem_name\x27/" \
+  test/dummy/config/routes.rb
+git add .
+git commit -m 'Create empty Rails engine'
+
+cd $gem_dir
+echo "gem 'rspec-rails', group: [:development, :test]" >> Gemfile
+bundle
+rails generate rspec:install
+sed -i \
+  -e 's/..\/..\/config\//..\/..\/test\/dummy\/config\//' \
+  -e 's/ActiveRecord::Migration/#ActiveRecord::Migration/g' \
+  spec/rails_helper.rb
+echo "require 'rspec/core/rake_task'" >> Rakefile
+echo 'RSpec::Core::RakeTask.new(:spec)' >> Rakefile
+git add .
+git commit -m 'Add RSpec support'
