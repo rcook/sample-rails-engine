@@ -2,9 +2,11 @@
 %html
   %head
     %meta{content: 'text/html; charset=UTF-8', 'http-equiv' => 'Content-Type'}/
-    %title Dummy
+    %title= content_for?(:title) ? strip_tags(content_for(:title)) : 'Dummy'
     = csrf_meta_tags
     = stylesheet_link_tag 'application', media: 'all'
+    = content_for(:stylesheets)
     = javascript_include_tag 'application'
+    = content_for(:javascripts)
   %body
     = yield
