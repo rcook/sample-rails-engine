@@ -14,13 +14,14 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-
-
 load 'rails/tasks/statistics.rake'
-
-
-
 require 'bundler/gem_tasks'
-
 require 'rspec/core/rake_task'
-RSpec::Core::RakeTask.new(:spec)
+
+RSpec::Core::RakeTask.new(:spec) do |task|
+  task.rspec_opts = '--format documentation'
+end
+
+task :server do
+  sh 'cd test/dummy && bin/rails server --binding=0.0.0.0'
+end
