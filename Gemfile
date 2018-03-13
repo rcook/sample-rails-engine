@@ -12,4 +12,6 @@ gemspec
 
 # To use a debugger
 # gem 'byebug', group: [:development, :test]
+
+gem 'haml-rails'
 gem 'rspec-rails', group: [:development, :test]
